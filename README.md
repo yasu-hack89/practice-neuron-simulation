@@ -1,2 +1,2 @@
 # first-practice-neuron-simulation
-first-practice-neuron-simulation
+For practicing neuroscience simulations
