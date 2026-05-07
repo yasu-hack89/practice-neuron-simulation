@@ -1,0 +1,12 @@
+!pip install mne
+
+import mne
+from mne.datasets.sleep_physionet.age import fetch_data
+
+files = fetch_data(subjects=[0], recording=[1])
+print(files)
+
+raw = mne.io.read_raw_edf(files[0][0], preload=True)
+print(raw.info)
+
+raw.plot(duration=30, n_channels=7, scalings='auto')
