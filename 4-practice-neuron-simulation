@@ -2,18 +2,27 @@
 
 import mne
 from mne.datasets.sleep_physionet.age import fetch_data
+
+# データとアノテーション（睡眠ステージラベル）をダウンロード
 files=fetch_data(subjects=[0],recording=[1])
 print(files)
 
+# 脳波データを読み込む
 raw=mne.io.read_raw_edf(files[0][0], preload=True)
+
+# 睡眠ステージのラベルを読み込んで脳波データに紐づける
 annotations=mne.read_annotations(files[0][1])
 raw.set_annotations(annotations)
 print(annotations)
 
+# REMのアノテーションだけ抽出（descriptionに'R'が含まれるもの）
 rem_annotations=[a for a in annotations if 'R' in a['description']]
 print(f"rem sleep times:{len(rem_annotations)}")
+
+# REM睡眠の開始時刻と継続時刻を表示
 for r in rem_annotations[:5]:
   print(f"start:{r['onset']:.1f}seconds repeat:{r['duration']:.1f}seconds")
 
+# 最初のREM睡眠時間を可視化する（30秒間）
 onset=rem_annotations[0]['onset']
 raw.plot(start=onset, duration=30, n_channels=7, scalings='auto')
