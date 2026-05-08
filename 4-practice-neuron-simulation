@@ -1,0 +1,19 @@
+!pip install mne
+
+import mne
+from mne.datasets.sleep_physionet.age import fetch_data
+files=fetch_data(subjects=[0],recording=[1])
+print(files)
+
+raw=mne.io.read_raw_edf(files[0][0], preload=True)
+annotations=mne.read_annotations(files[0][1])
+raw.set_annotations(annotations)
+print(annotations)
+
+rem_annotations=[a for a in annotations if 'R' in a['description']]
+print(f"rem sleep times:{len(rem_annotations)}")
+for r in rem_annotations[:5]:
+  print(f"start:{r['onset']:.1f}seconds repeat:{r['duration']:.1f}seconds")
+
+onset=rem_annotations[0]['onset']
+raw.plot(start=onset, duration=30, n_channels=7, scalings='auto')
