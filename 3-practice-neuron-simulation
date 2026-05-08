@@ -1,12 +1,16 @@
+# MNE install
 !pip install mne
 
 import mne
 from mne.datasets.sleep_physionet.age import fetch_data
 
+# physioNetからdataをdownload（被験者0番）
 files = fetch_data(subjects=[0], recording=[1])
 print(files)
 
+# 脳波データを読み込む（EDF形式）
 raw = mne.io.read_raw_edf(files[0][0], preload=True)
-print(raw.info)
+print(raw.info) # データの基本情報を表示
 
+# 脳波を可視化（30秒間、全7チャンネル）
 raw.plot(duration=30, n_channels=7, scalings='auto')
