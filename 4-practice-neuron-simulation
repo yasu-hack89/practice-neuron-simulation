@@ -1,3 +1,5 @@
+#REM睡眠をグラフから切り出す
+
 !pip install mne
 
 import mne
