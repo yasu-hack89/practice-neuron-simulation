@@ -1,4 +1,4 @@
-# first-practice-neuron-simulation
+# practice-neuron-simulation
 For practicing neuroscience simulations
 1. 膜電位の基礎と閾値表示
 2. Numpyを用いて1.を効率化する
