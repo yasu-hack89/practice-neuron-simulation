@@ -1,0 +1,116 @@
+!pip install mne
+
+# ライブラリのインポート
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from mne.datasets.sleep_physionet.age import fetch_data
+
+# データのダウンロードと読み込み
+files = fetch_data(subjects=[0], recording=[1])
+raw = mne.io.read_raw_edf(files[0][0], preload=True)
+
+# 睡眠ステージのアノテーションを読み込む
+annotations = mne.read_annotations(files[0][1])
+raw.set_annotations(annotations)
+
+# REMとNREMのアノテーションを抽出
+rem_annotations = [a for a in annotations if 'R' in a['description']]
+nrem_annotations = [a for a in annotations if '2' in a['description']]
+
+# 最初のREM睡眠区間を切り出す
+onset_rem = rem_annotations[0]['onset']
+duration_rem = rem_annotations[0]['duration']
+rem_raw = raw.copy().crop(tmin=onset_rem, tmax=onset_rem + duration_rem)
+
+# 最初のNREM睡眠区間を切り出す
+onset_nrem = nrem_annotations[0]['onset']
+duration_nrem = nrem_annotations[0]['duration']
+nrem_raw = raw.copy().crop(tmin=onset_nrem, tmax=onset_nrem + duration_nrem)
+
+# EEGチャンネルだけ選択
+rem_eeg = rem_raw.copy().pick(['EEG Fpz-Cz', 'EEG Pz-Oz'])
+nrem_eeg = nrem_raw.copy().pick(['EEG Fpz-Cz', 'EEG Pz-Oz'])
+
+# パワースペクトル密度を計算
+psd_rem = rem_eeg.compute_psd(fmax=30)
+psd_nrem = nrem_eeg.compute_psd(fmax=30)
+
+# 周波数軸と平均パワーを取得
+freqs = psd_rem.freqs
+power_rem = psd_rem.get_data().mean(axis=0)
+power_nrem = psd_nrem.get_data().mean(axis=0)
+
+# REM vs NREMを重ねて描画
+plt.figure(figsize=(10, 5))
+plt.plot(freqs, 10 * np.log10(power_rem), label='REM', color='red', linewidth=2)
+plt.plot(freqs, 10 * np.log10(power_nrem), label='NREM', color='blue', linewidth=2)
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power (dB)')
+plt.title('REM vs NREM power spectrum')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+#以下練習の際のコード
+!pip install mne
+
+import mne
+from mne.datasets.sleep_physionet.age import fetch_data
+
+files = fetch_data(subjects=[0], recording=[1])
+raw=mne.io.read_raw_edf(files[0][0], preload=True)
+annotations=mne.read_annotations(files[0][1])
+raw.set_annotations(annotations)
+
+rem_annotations=[a for a in annotations if 'R' in a ['description']]
+print(f"Rem-sleep count:{len(rem_annotations)}")
+
+
+onset=rem_annotations[0]['onset']
+duration=rem_annotations[0]['duration']
+
+rem_raw=raw.copy().crop(tmin=onset, tmax=onset+duration)
+print(f"cutting section:{duration}s")
+
+
+import matplotlib.pyplot as plt
+
+rem_eeg=rem_raw.copy().pick(['EEG Fpz-Cz', 'EEG Pz-Oz'])
+
+fig=rem_eeg.compute_psd(fmax=30).plot()
+plt.show()
+
+
+nrem_annotations=[a for a in annotations if '2' in a['description']]
+onset_nrem=nrem_annotations[0]['onset']
+duration_nrem=nrem_annotations[0]['duration']
+
+nrem_raw=raw.copy().crop(tmin=onset_nrem, tmax=onset_nrem+duration_nrem)
+nrem_eeg=nrem_raw.copy().pick(['EEG Fpz-Cz', 'EEG Pz-Oz'])
+
+fig=nrem_eeg.compute_psd(fmax=30).plot()
+plt.show()
+
+
+import numpy as np
+
+psd_rem=rem_eeg.compute_psd(fmax=30)
+psd_nrem=nrem_eeg.compute_psd(fmax=30)
+
+freqs=psd_rem.freqs
+power_rem=psd_rem.get_data().mean(axis=0)
+power_nrem=psd_nrem.get_data().mean(axis=0)
+
+plt.figure(figsize=(10,5))
+plt.plot(freqs,10*np.log10(power_rem), label='rem', color='red')
+plt.plot(freqs,10*np.log10(power_nrem), label='nrem', color='blue')
+
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power (dB)')
+plt.title('REM vs NREM power spectrum')
+plt.legend()
+plt.grid(True)
+plt.show()
