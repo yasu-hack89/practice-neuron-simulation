@@ -1,0 +1,63 @@
+!pip install mne
+ #colabのシステムコマンド
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+ #mne,matplotlob,numpyをimport
+from mne.datasets.sleep_physionet.age import fetch_data
+ #physionetからfetch_dataをimport
+
+files=fetch_data(subjects=[0],recording=[1])
+ #被験者0番のデータダウンロード。脳波と睡眠ステージも。
+raw=mne.io.read_raw_edf(files[0][0],preload=True)
+ #脳波を入れて、全データをTrueでメモリに展開。
+
+annotations=mne.read_annotations(files[0][1])
+ #アノテーションで注釈して、脳波のデータに紐づける。
+raw.set_annotations(annotations)
+
+rem_annotations=[a for a in annotations if 'R' in a['description']]
+print(f"REM count:{len(rem_annotations)}")
+ #REM睡眠の抽出。descriptionにRが含まれるannotationsを抽出
+
+
+raw_filtered=raw.copy().filter(l_freq=0.5,h_freq=30.0)
+ #フィルタリング。元データを保持しながらコピーを作る。0.5〜30Hzだけ通すバンドパスフィルタをかける。0.5Hz以下の極低周波ノイズ（体動など）と30Hz以上の高周波ノイズ（筋電など）を除去
+
+raw.plot(duration=10,n_channels=2,scalings='auto',title='Beforefilter')
+plt.show()
+raw_filtered.plot(duration=10,n_channels=2,scalings='auto',title='Afterfilter')
+plt.show()
+ #データを描写。duration=10で10秒間、n_channels=2でEEGの2チャンネルだけ表示。
+
+
+raw_notch=raw_filtered.copy().notch_filter(freqs=50)
+print("completed notch filter")
+ #ノッチフィルタ。コピーして、50Hzを除去。
+
+
+from mne.preprocessing import create_eog_epochs
+ #create_eog_epochsをimport
+eog_epochs=create_eog_epochs(raw_filtered, ch_name='EOG horizontal')
+print(f"detectioned artifact:{len(eog_epochs)}")
+ #EOGを使って、眼球運動の特徴的な動作が発生した瞬間を区間として取り出している。
+
+
+events=mne.make_fixed_length_events(raw_filtered, duration=30.0)
+epochs=mne.Epochs(raw_filtered,events,tmin=0, tmax=30.0,baseline=None,preload=True)
+ #30秒ごとに切り取り。
+
+epochs.drop_bad(reject={'eeg':200e-6})
+print(f"Number of remaining epochs:{len(epochs)}")
+ #アーティファクトを除去して、数を表示
+
+raw_eeg_only=raw_filtered.copy().pick(['EEG Fpz-Cz','EEG Pz-Oz'])
+ #EEGチャネルを選択
+
+events=mne.make_fixed_length_events(raw_eeg_only,duration=30.0)
+epochs=mne.Epochs(raw_eeg_only,events,tmin=0,tmax=30.0,baseline=None,preload=True)
+ #対象を絞った状態で30秒ごとに区切る
+
+epochs.drop_bad(reject={'eeg':200e-6})
+print(f"Number of remaining epochs:{len(epochs)}")
+ #200μVの閾値を設定して、データを絞った。
