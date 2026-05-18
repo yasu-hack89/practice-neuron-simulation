@@ -4,3 +4,5 @@ For practicing neuroscience simulations
 2. Numpyを用いて1.を効率化する
 3. MNE-Pythonで睡眠脳波を可視化する
 4. REM睡眠を切り出す
+5. REMとNREMをグラフで比較
+6. フィルタリング・ノッチフィルタ・アーティファクト除去でデータをクリーンに
