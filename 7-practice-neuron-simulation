@@ -1,0 +1,96 @@
+#1. ライブラリのインポート
+!pip install mne
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from mne.datasets.sleep_physionet.age import fetch_data
+
+#2. パラメータ設定
+subject=0
+recording=1
+l_freq=0.5
+h_freq=30.0
+epoch_duration=30.0
+reject_threshold=200e-6
+eeg_channels=['EEG Fpz-Cz', 'EEG Pz-Oz']
+
+print("parameter settings complete")
+
+#3. load_sleep_data()の定義
+def load_sleep_data(subject=subject, recording=recording):
+
+  files=fetch_data(subjects=[subject], recording=[recording])
+  raw=mne.io.read_raw_edf(files[0][0], preload=True)
+  annotations=mne.read_annotations(files[0][1])
+  raw.set_annotations(annotations)
+  print(f"Data loading for subject complete.")
+  print(f"Sampling frequency: {raw.info['sfreq']} Hz")
+  print(f"channels:{len(raw.ch_names)}")
+  return raw, annotations
+  
+raw, annotations=load_sleep_data()
+
+#4. preprocess()の定義
+def preprocess(raw, l_freq=l_freq, h_hreq=h_freq, channels=eeg_channels):
+
+  raw_filtered=raw.copy().filter(l_freq=l_freq, h_freq=h_freq)
+  print(f"handpass filter complete:{l_freq}～{h_freq}Hz")
+  raw_filtered.pick(channels)
+  print(f"using channels:{channels}")
+  return raw_filtered
+
+raw_filtered=preprocess(raw)
+
+#5. make_clean_epochs()の定義
+def make_clean_epochs(raw_filtered, duration=epoch_duration, reject=reject_threshold):
+
+  events=mne.make_fixed_length_events(raw_filtered, duration=duration)
+  epochs=mne.Epochs(raw_filtered, events, tmin=0, tmax=duration, baseline=None, preload=True)
+  epochs.drop_bad(reject={'eeg':reject})
+  print(f"Number of remaining epochs:{len(epochs)}")
+
+  return epochs
+  
+epochs=make_clean_epochs(raw_filtered)
+
+#6. plot_psd_comparison()の定義
+def plot_psd_comparison(raw_filtered, annotations, title='PSD compare'):
+  rem_annotations=[a for a in annotations if 'R' in a['description']]
+  nrem_annotations=[a for a in annotations if '2' in a ['description']]
+
+  onset_rem=rem_annotations[0]['onset']
+  duration_rem=rem_annotations[0]['duration']
+  rem_rem=raw_filtered.copy().crop(tmin=onset_rem, tmax=onset_rem+duration_rem)
+
+  onset_nrem=nrem_annotations[0]['onset']
+  duration_nrem=nrem_annotations[0]['duration']
+  rem_nrem=raw_filtered.copy().crop(tmin=onset_nrem, tmax=onset_nrem+duration_nrem)
+
+  psd_rem=rem_rem.compute_psd(fmax=h_freq)
+  psd_nrem=rem_nrem.compute_psd(fmax=h_freq)
+
+  freqs=psd_rem.freqs
+  power_rem=psd_rem.get_data().mean(axis=0)
+  power_nrem=psd_nrem.get_data().mean(axis=0)
+
+  plt.figure(figsize=(10,5))
+  plt.plot(freqs, 10*np.log10(power_rem), label='REM', color='red', linewidth=2)
+  plt.plot(freqs, 10*np.log10(power_nrem), label='NREM', color='blue', linewidth=2)
+  plt.xlabel('Frequency (Hz)')
+  plt.ylabel('Power (dB)')
+  plt.title(title)
+  plt.legend()
+  plt.grid(True)
+  plt.show()
+
+plot_psd_comparison(raw_filtered, annotations)
+
+#7. 実行の4行
+#データ読み込み
+raw, annotations = load_sleep_data()
+#前処理
+raw_filtered = preprocess(raw)
+#エポック化
+epochs = make_clean_epochs(raw_filtered)
+#PSD比較グラフ
+plot_psd_comparison(raw_filtered, annotations)
