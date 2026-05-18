@@ -6,3 +6,4 @@ For practicing neuroscience simulations
 4. REM睡眠を切り出す
 5. REMとNREMをグラフで比較
 6. フィルタリング・ノッチフィルタ・アーティファクト除去でデータをクリーンに
+7. 1-6を他のデータでも対応できるように構築
