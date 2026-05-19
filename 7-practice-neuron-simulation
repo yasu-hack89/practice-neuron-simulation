@@ -6,18 +6,18 @@ import matplotlib.pyplot as plt
 from mne.datasets.sleep_physionet.age import fetch_data
 
 #2. パラメータ設定
-subject=0
-recording=1
-l_freq=0.5
-h_freq=30.0
-epoch_duration=30.0
-reject_threshold=200e-6
-eeg_channels=['EEG Fpz-Cz', 'EEG Pz-Oz']
+SUBJECT=0
+RECORDING=1
+L_FREQ=0.5
+H_FREQ=30.0
+EPOCH_DURATION=30.0
+REJECT_THRESHOLD=200e-6
+EEG_CHANNELS=['EEG Fpz-Cz', 'EEG Pz-Oz']
 
 print("parameter settings complete")
 
 #3. load_sleep_data()の定義
-def load_sleep_data(subject=subject, recording=recording):
+def load_sleep_data(subject=SUBJECT, recording=RECORDING):
 
   files=fetch_data(subjects=[subject], recording=[recording])
   raw=mne.io.read_raw_edf(files[0][0], preload=True)
@@ -31,9 +31,9 @@ def load_sleep_data(subject=subject, recording=recording):
 raw, annotations=load_sleep_data()
 
 #4. preprocess()の定義
-def preprocess(raw, l_freq=l_freq, h_hreq=h_freq, channels=eeg_channels):
+def preprocess(raw, l_freq=L_FREQ, h_hreq=H_FREQ, channels=EEG_CHANNELS):
 
-  raw_filtered=raw.copy().filter(l_freq=l_freq, h_freq=h_freq)
+  raw_filtered=raw.copy().filter(l_freq=L_FREQ, h_freq=H_FREQ)
   print(f"handpass filter complete:{l_freq}～{h_freq}Hz")
   raw_filtered.pick(channels)
   print(f"using channels:{channels}")
@@ -42,7 +42,7 @@ def preprocess(raw, l_freq=l_freq, h_hreq=h_freq, channels=eeg_channels):
 raw_filtered=preprocess(raw)
 
 #5. make_clean_epochs()の定義
-def make_clean_epochs(raw_filtered, duration=epoch_duration, reject=reject_threshold):
+def make_clean_epochs(raw_filtered, duration=EPOCH_DURATION, reject=REJECT_THRESHOLD):
 
   events=mne.make_fixed_length_events(raw_filtered, duration=duration)
   epochs=mne.Epochs(raw_filtered, events, tmin=0, tmax=duration, baseline=None, preload=True)
@@ -66,8 +66,8 @@ def plot_psd_comparison(raw_filtered, annotations, title='PSD compare'):
   duration_nrem=nrem_annotations[0]['duration']
   rem_nrem=raw_filtered.copy().crop(tmin=onset_nrem, tmax=onset_nrem+duration_nrem)
 
-  psd_rem=rem_rem.compute_psd(fmax=h_freq)
-  psd_nrem=rem_nrem.compute_psd(fmax=h_freq)
+  psd_rem=rem_rem.compute_psd(fmax=H_FREQ)
+  psd_nrem=rem_nrem.compute_psd(fmax=H_FREQ)
 
   freqs=psd_rem.freqs
   power_rem=psd_rem.get_data().mean(axis=0)
