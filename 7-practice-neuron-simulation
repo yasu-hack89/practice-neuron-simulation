@@ -31,7 +31,7 @@ def load_sleep_data(subject=SUBJECT, recording=RECORDING):
 raw, annotations=load_sleep_data()
 
 #4. preprocess()の定義
-def preprocess(raw, l_freq=L_FREQ, h_hreq=H_FREQ, channels=EEG_CHANNELS):
+def preprocess(raw, l_freq=L_FREQ, h_freq=H_FREQ, channels=EEG_CHANNELS):
 
   raw_filtered=raw.copy().filter(l_freq=L_FREQ, h_freq=H_FREQ)
   print(f"handpass filter complete:{l_freq}～{h_freq}Hz")
