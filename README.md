@@ -9,3 +9,4 @@ For practicing neuroscience simulations
 7. 1-6を他のデータでも対応できるように構築
 8. Openneuroからedfだけでなくset,bdfにも対応
 10. ECGからLF,HF,LFHFを観察 
+11. RemのTemazepamとcontrolを比較
