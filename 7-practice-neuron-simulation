@@ -60,14 +60,14 @@ def plot_psd_comparison(raw_filtered, annotations, title='PSD compare'):
 
   onset_rem=rem_annotations[0]['onset']
   duration_rem=rem_annotations[0]['duration']
-  rem_rem=raw_filtered.copy().crop(tmin=onset_rem, tmax=onset_rem+duration_rem)
+  rem_raw=raw_filtered.copy().crop(tmin=onset_rem, tmax=onset_rem+duration_rem)
 
   onset_nrem=nrem_annotations[0]['onset']
   duration_nrem=nrem_annotations[0]['duration']
-  rem_nrem=raw_filtered.copy().crop(tmin=onset_nrem, tmax=onset_nrem+duration_nrem)
+  nrem_raw=raw_filtered.copy().crop(tmin=onset_nrem, tmax=onset_nrem+duration_nrem)
 
-  psd_rem=rem_rem.compute_psd(fmax=H_FREQ)
-  psd_nrem=rem_nrem.compute_psd(fmax=H_FREQ)
+  psd_rem=rem_raw.compute_psd(fmax=H_FREQ)
+  psd_nrem=nrem_raw.compute_psd(fmax=H_FREQ)
 
   freqs=psd_rem.freqs
   power_rem=psd_rem.get_data().mean(axis=0)
