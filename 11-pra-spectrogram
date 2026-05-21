@@ -1,0 +1,48 @@
+!pip install mne
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from mne.datasets.sleep_physionet.age import fetch_data
+
+files=fetch_data(subjects=[0],recording=[1])
+raw=mne.io.read_raw_edf(files[0][0],preload=True)
+annotations=mne.read_annotations(files[0][1])
+raw.set_annotations(annotations)
+
+L_FREQ=0.5
+H_FREQ=30.0
+EEG_CHANNELS=['EEG Fpz-Cz','EEG Pz-Oz']
+
+raw_filtered=raw.copy().filter(l_freq=L_FREQ,h_freq=H_FREQ)
+raw_filtered.pick(EEG_CHANNELS)
+
+print("complete")
+
+#
+raw_eeg=raw_filtered.copy().pick(['EEG Fpz-Cz'])
+
+fig=raw_eeg.compute_psd(
+    method='welch',
+    fmax=30.0,
+    tmin=0,
+    tmax=3600.0
+).plot()
+plt.show()
+
+#
+import numpy as np
+from scipy import signal
+
+data=raw_filtered.get_data(picks=['EEG Fpz-Cz'])[0]
+fs=raw_filtered.info['sfreq']
+
+freqs,times,Sxx=signal.spectrogram(data,fs=fs,nperseg=int(fs*30))
+
+plt.figure(figsize=(15,5))
+plt.pcolormesh(times/3600,freqs,10*np.log10(Sxx),shading='gouraud',cmap='viridis')
+plt.ylabel('Frequency(Hz)')
+plt.xlabel('Time(hours)')
+plt.title('Spectrogram - EEG Fpz-Cz')
+plt.ylim(0,30)
+plt.colorbar(label='Power(dB)')
+plt.show()
