@@ -1,0 +1,108 @@
+!pip install mne
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from mne.datasets.sleep_physionet.temazepam import fetch_data
+
+files=fetch_data(subjects=[0])
+print(files)
+
+#
+help(fetch_data) #つまりrecordingがあると思ったら、無かった。
+
+#
+raw=mne.io.read_raw_edf(files[0][0],preload=True)
+annotations=mne.read_annotations(files[0][1])
+raw.set_annotations(annotations)
+
+print(raw.info)
+print(annotations)
+
+#
+print(files)
+print(len(files)) #lenでリストの要素数を返す
+
+#
+EEG_CHANNELS_BDF=['EEG Fpz-Cz', 'EEG Pz-Oz']
+L_FREQ=0.5
+H_FREQ=30.0
+F_MAX=30.0
+
+raw_filtered=raw.copy().filter(l_freq=L_FREQ, h_freq=H_FREQ)
+raw_filtered.pick(EEG_CHANNELS_BDF)
+
+rem_annotations=[a for a in annotations if 'R' in a['description']]
+nrem_annotations=[a for a in annotations if '2' in a ['description']]
+
+print(f"REM annotations: {len(rem_annotations)}")
+print(f"NREM annotations: {len(nrem_annotations)}")
+
+#
+onset_rem=rem_annotations[0]['onset'] #7からの流用
+duration_rem=rem_annotations[0]['duration']
+rem_raw=raw_filtered.copy().crop(tmin=onset_rem, tmax=onset_rem+duration_rem)
+
+onset_nrem=nrem_annotations[0]['onset']
+duration_nrem=nrem_annotations[0]['duration']
+nrem_raw=raw_filtered.copy().crop(tmin=onset_nrem, tmax=onset_nrem+duration_nrem)
+
+psd_rem=rem_raw.compute_psd(fmax=H_FREQ)
+psd_nrem=nrem_raw.compute_psd(fmax=H_FREQ)
+
+freqs=psd_rem.freqs
+power_rem=psd_rem.get_data().mean(axis=0)
+power_nrem=psd_nrem.get_data().mean(axis=0)
+
+plt.figure(figsize=(10,5))
+plt.plot(freqs, 10*np.log10(power_rem), label='REM', color='red', linewidth=2)
+plt.plot(freqs, 10*np.log10(power_nrem), label='NREM', color='blue', linewidth=2)
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power (dB)')
+plt.title('Temazepam compare : REM vs NREM')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+#
+from mne.datasets.sleep_physionet.age import fetch_data as fetch_age
+files_placebo=fetch_age(subjects=[0], recording=[1])
+raw_placebo=mne.io.read_raw_edf(files_placebo[0][0],preload=True)
+annotations_placebo=mne.read_annotations(files_placebo[0][1])
+raw_placebo.set_annotations(annotations_placebo)
+
+EEG_CHANNELS_BDF=['EEG Fpz-Cz', 'EEG Pz-Oz']
+L_FREQ=0.5
+H_FREQ=30.0
+F_MAX=30.0
+
+raw_placebo_filtered=raw_placebo.copy().filter(l_freq=L_FREQ, h_freq=H_FREQ)
+raw_placebo_filtered.pick(EEG_CHANNELS_BDF)
+print("placebo data loading complete")
+
+#
+rem_annotations_placebo=[a for a in annotations_placebo if 'R' in a['description']]
+onset_placebo=rem_annotations_placebo[0]['onset']
+duration_placebo=rem_annotations_placebo[0]['duration']
+rem_placebo=raw_placebo_filtered.copy().crop(tmin=onset_placebo, tmax=onset_placebo+duration_placebo)
+
+rem_annotations_tmz=[a for a in annotations_placebo if 'R' in a['description']]
+onset_tmz=rem_annotations[0]['onset']
+duration_tmz=rem_annotations[0]['duration']
+rem_tmz=raw_filtered.copy().crop(tmin=onset_tmz, tmax=onset_tmz+duration_tmz)
+
+psd_placebo=rem_placebo.compute_psd(fmax=H_FREQ)
+psd_tmz=rem_tmz.compute_psd(fmax=H_FREQ)
+
+freqs=psd_placebo.freqs
+power_placebo=psd_placebo.get_data().mean(axis=0)
+power_tmz=psd_tmz.get_data().mean(axis=0)
+
+plt.figure(figsize=(10,5))
+plt.plot(freqs, 10*np.log10(power_placebo), label='Placebo', color='blue', linewidth=2)
+plt.plot(freqs, 10*np.log10(power_tmz), label='temazepam', color='red', linewidth=2)
+plt.xlabel('Frequency(Hz)')
+plt.ylabel('Power(dB)')
+plt.title('REM sleep : Placebo vs temazepam')
+plt.legend()
+plt.grid(True)
+plt.show()
