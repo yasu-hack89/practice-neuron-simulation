@@ -1,0 +1,56 @@
+!pip install mne
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from mne.datasets.sleep_physionet.age import fetch_data
+
+L_FREQ=0.5
+H_FREQ=30.0
+EEG_CHANNELS = ['EEG Fpz-Cz', 'EEG Pz-Oz']
+
+files = fetch_data(subjects=[0], recording=[1])
+raw = mne.io.read_raw_edf(files[0][0], preload=True)
+annotations = mne.read_annotations(files[0][1])
+raw.set_annotations(annotations)
+
+raw_filtered = raw.copy().filter(l_freq=L_FREQ, h_freq=H_FREQ)
+raw_filtered.pick(EEG_CHANNELS)
+
+print("complete")
+
+#
+from mne.preprocessing import ICA
+
+N_COMPONENTS=2
+RANDOM_STATE=42
+
+ica=ICA(n_components=N_COMPONENTS,random_state=RANDOM_STATE)
+ica.fit(raw_filtered)
+print("ICA complete")
+print(ica)
+
+#ICA成分を可視化
+ica.plot_components()
+plt.show()
+
+#電極の位置情報が無いため、時系列で可視化
+ica.plot_sources(raw_filtered)
+plt.show()
+
+#ICA000をノイズとして除去
+ica.exclude=[0]
+
+#除去後のデータ
+raw_clean=raw_filtered.copy()
+ica.apply(raw_clean)
+print("artifact clean complete")
+
+#比較
+fig,axes=plt.subplots(2,1,figsize=(15,8))
+DURATION=10
+N_CHANNELS=2
+#前
+raw_filtered.plot(duration=DURATION,n_channels=N_CHANNELS,scalings='auto',title='ICA Before',show=False)
+#後
+raw_clean.plot(duration=10,n_channels=2,scalings='auto',title='ICA After',show=False)
+plt.show()
