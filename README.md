@@ -10,3 +10,5 @@ For practicing neuroscience simulations
 8. Openneuroからedfだけでなくset,bdfにも対応
 9. ECGからLF,HF,LFHFを観察 
 10. RemのTemazepamとcontrolを比較
+11. 時間周波数解析（スペクトログラム）
+12. ICAクラスタリング
