@@ -1,6 +1,5 @@
 # practice-neuron-simulation
-For practicing neuroscience simulations
-0. colabを開く
+For practicing neuroscience simulations on Google Colab
 1. 膜電位の基礎と閾値表示
 2. Numpyを用いて1.を効率化する
 3. MNE-Pythonで睡眠脳波を可視化する
