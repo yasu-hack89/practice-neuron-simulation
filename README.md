@@ -12,4 +12,4 @@ For practicing neuroscience simulations
 9. ECGからLF,HF,LFHFを観察 
 10. RemのTemazepamとcontrolを比較
 11. 時間周波数解析（スペクトログラム）
-12. ICAクラスタリング
+12. ICA（独立成分分析）クラスタリング
