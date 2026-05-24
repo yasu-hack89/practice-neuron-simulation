@@ -15,3 +15,6 @@ For practicing neuroscience simulations on Google Colab
 > 10. RemのTemazepamとcontrolを比較
 > 11. 時間周波数解析（スペクトログラム）
 > 12. ICA（独立成分分析）クラスタリング
+
+> [!TIP]
+>  13. Blender-render-colabコードを移行
