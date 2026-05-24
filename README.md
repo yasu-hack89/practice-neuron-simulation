@@ -17,4 +17,4 @@ For practicing neuroscience simulations on Google Colab
 > 12. ICA（独立成分分析）クラスタリング
 
 > [!TIP]
->  13. BlenderのRenderコードをColabで作成したやつをここに移しました
+>  13. Blender-render-colabコードを移行
