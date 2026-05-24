@@ -1,5 +1,6 @@
 # practice-neuron-simulation
 For practicing neuroscience simulations on Google Colab
+
 > [!NOTE]
 > **目次**
 > 1. 膜電位の基礎と閾値表示
@@ -16,4 +17,4 @@ For practicing neuroscience simulations on Google Colab
 > 12. ICA（独立成分分析）クラスタリング
 
 > [!TIP]
-> 13. BlenderのRenderコードをColabで作成したやつをここに移しました
+>  13. BlenderのRenderコードをColabで作成したやつをここに移しました
