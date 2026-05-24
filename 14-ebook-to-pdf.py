@@ -2,7 +2,7 @@
 ebook_to_pdf.py
 スクリーンショット → PDF 変換スクリプト
 主に印刷不可能な授業レジュメをPDFにするために作成。
-使用は自己責任でお願いします。
+使用は自己責任。
 
 【必要ライブラリのインストール】
   python -m pip install pyautogui pillow img2pdf
